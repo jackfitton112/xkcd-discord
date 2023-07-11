@@ -67,6 +67,7 @@ async def get_post_info(post_number: int) -> list:
             dom = etree.HTML(text=str(soup), parser=None)
             # Get the image URL 
             # /html/body/div[2]/a[2]
+
             url = dom.xpath("/html/body/div[2]/a[2]")[0].attrib["href"] #This is the image URL
             alt = dom.xpath("/html/body/div[2]/div[2]/img")[0].attrib["title"] # This is the alt text
             title = str(dom.xpath("/html/body/div[2]/div[1]")[0].text) # This is the title of the post
@@ -98,31 +99,32 @@ async def on_message(message):
     if message.author == client.user:
         return # Ignore messages from the bot
 
-    post = 404 # Set the post to 404; this is for type safety
     if message.content.startswith('!xkcd'):
 
         #if there is a number after the command
         if len(message.content.split()) > 1:
             # Get the post number
-            if type(message.content.split()[1]) == int:
-                post = message.content.split()[1] 
+                
+            post = message.content.split()[1] 
 
-
-            elif message.content.split()[1] == "help":
+            if message.content.split()[1] == "help":
                 await help(channel=message.channel)
                 return
         
             elif message.content.split()[1] == "latest":
                 post = await get_num_of_posts()
 
-
-
+            else:
+                try:
+                    post = int(post)
+                except:
+                    post = 404
 
         else:
             # Get a random post
             post = await pick_random_post()
 
-        
+  
         img_url, title, alt, post_url = await get_post_info(post)
 
         # Create the embed
