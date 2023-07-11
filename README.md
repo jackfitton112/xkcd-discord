@@ -6,7 +6,9 @@
 
 A Discord bot that sends XKCD comics to a channel.
 
-## Installation
+Add the bot to your server [ADD TO DISCORD](https://discord.com/api/oauth2/authorize?client_id=1128423843460026409&permissions=3072&redirect_uri=https%3A%2F%2Ft2k.group&response_type=code&scope=bot%20messages.read).
+
+## Installation - Self Hosting
 1. Clone the repository
 2. Install the requirements 
 
