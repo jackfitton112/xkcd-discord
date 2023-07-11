@@ -68,9 +68,11 @@ async def get_post_info(post_number: int) -> list:
             # Get the image URL 
             # /html/body/div[2]/a[2]
             url = dom.xpath("/html/body/div[2]/a[2]")[0].attrib["href"] #This is the image URL
+            alt = dom.xpath("/html/body/div[2]/div[2]/img")[0].attrib["title"] # This is the alt text
             title = str(dom.xpath("/html/body/div[2]/div[1]")[0].text) # This is the title of the post
+
             link = "https://xkcd.com/" + str(post_number) # This is the perm link to the post
-            return [url, title, link] # Return the list of the image URL, title and link
+            return [url, title, alt, link] # Return the list of the image URL, title and link
         
 
 async def help(channel: discord.TextChannel) -> None:
@@ -121,11 +123,12 @@ async def on_message(message):
             post = await pick_random_post()
 
         
-        img_url, title, post_url = await get_post_info(post)
+        img_url, title, alt, post_url = await get_post_info(post)
 
         # Create the embed
         embed = discord.Embed(title=title, url=post_url, color=0x00ff00)
         embed.set_image(url=img_url)
+        embed.set_footer(text=alt)
         # Send the embed
         await message.channel.send(embed=embed)
 
