@@ -34,13 +34,15 @@ Thats it! The bot should now be running.
 
 ## Usage
 
-`!xkcd` - Sends a random XKCD comic to the channel.
+the base command is `!xkcd` and can be used in the following ways:
 
-`!xkcd <comic number>` - Sends a specific XKCD comic to the channel.
+- `!xkcd help` - Shows the help message
+- `!xkcd latest` - Sends the latest XKCD comic
+- `!xkcd random` - Sends a random XKCD comic
+- `!xkcd <comic number>` - Sends the XKCD comic with the given number
+- `!xkcd search <search term>` - searches for an XKCD comic with the given search term
+- `!xkcd explain <comic number>` - Sends the explain xkcd page for the given comic number
 
-`!xkcd latest` - Sends the latest XKCD comic to the channel.
-
-`!xkcd help` - Sends a help message to the channel.
 
 
 

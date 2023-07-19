@@ -5,6 +5,9 @@ import queue
 import xml.etree.ElementTree as ET
 from alive_progress import alive_bar
 import random
+import mwparserfromhell
+import time
+import threading
 
 processing_queue = queue.Queue()
 
@@ -25,7 +28,8 @@ def init_database():
         post_title text,
         post_alt text,
         post_url text,
-        post_img text)
+        post_img text,
+        explination text)
         ''')
     
     # commit changes
@@ -42,8 +46,9 @@ def init_database():
 # post_alt: the alt text of the post
 # post_url: the url of the post
 # post_img: the image url of the post
+# exp: the explination of the post
 # returns: True if successful, False if not      
-def add_post(post_id: int, post_title: str, post_alt: str, post_url: str, post_img: str, conn = None) -> bool:
+def add_post(post_id: int, post_title: str, post_alt: str, post_url: str, post_img: str, exp: str, conn = None) -> bool:
 
     close_conn = False
 
@@ -56,14 +61,16 @@ def add_post(post_id: int, post_title: str, post_alt: str, post_url: str, post_i
 
     # insert data
     try:
-        c.execute("INSERT INTO xkcd VALUES (:id, :post_id, :post_title, :post_alt, :post_url, :post_img)",
+        c.execute("INSERT INTO xkcd VALUES (:id, :post_id, :post_title, :post_alt, :post_url, :post_img, :explination)",
                 {
                     'id': None,
                     'post_id': post_id,
                     'post_title': post_title,
                     'post_alt': post_alt,
                     'post_url': post_url,
-                    'post_img': post_img
+                    'post_img': post_img,
+                    'explination': exp
+
                 }
             )
 
@@ -84,7 +91,7 @@ def add_posts(posts: list) -> bool:
 
     for post in posts:
 
-        if not add_post(post[0], post[1], post[2], post[3], post[4]):
+        if not add_post(post[0], post[1], post[2], post[3], post[4], post[5]):
             return False
 
 
@@ -137,7 +144,69 @@ async def get_page_count() -> int:
 
 async def scrape_xkcd():
 
-    # connect to database
+    def scrape_post(post_id):
+
+        url = f"https://xkcd.com/{post_id}/info.0.json"
+
+        # get data
+        response = requests.get(url)
+
+        # check if response is valid
+        if response.status_code != 200:
+            return False
+        
+        # get json
+        post = response.json()
+
+        id = post['num']
+        title = post['title']
+        alt = post['alt']
+        url = f"https://xkcd.com/{post_id}/"
+        img = post['img']
+
+        #replace spaces with underscores
+        exp_title = title.replace(" ", "_")
+        exp_url = f"https://www.explainxkcd.com/wiki/api.php?action=parse&page={id}:_{exp_title}&prop=wikitext&sectiontitle=Explanation&format=json"
+
+        # get data
+        response = requests.get(exp_url)
+
+        # check if response is valid
+        if response.status_code != 200:
+            return [id, title, alt, url, img, ""]
+        
+        # get json
+        try:
+            exp = response.json()
+
+            wiki_text = exp['parse']['wikitext']['*']
+
+
+            # Parse the wikitext using mwparserfromhell
+            wikicode = mwparserfromhell.parse(wiki_text)
+
+            # Find the section by heading title
+            explanation_section = None
+
+            for section in wikicode.get_sections(include_lead=True, include_headings=True):
+                if section.strip_code().strip().startswith("Explanation"):
+                    explanation_section = section
+                    break
+
+            if explanation_section:
+                exp = explanation_section.strip_code().strip()
+
+            else:
+                exp = "No explanation found"
+
+        except:
+            exp = "No explanation found"
+
+
+        #return [id, title, alt, url, img, exp]
+        processing_queue.put_nowait([id, title, alt, url, img, exp])
+
+  # connect to database
     conn = sqlite3.connect('xkcd.db')
 
     latest_xkcd = await get_page_count()
@@ -150,37 +219,26 @@ async def scrape_xkcd():
             for i in range(latest_db + 1, latest_xkcd):
 
                 # add scrape to queue
-                post = await scrape_post(i)
-                if post:
-                    add_post(post[0], post[1], post[2], post[3], post[4], conn)
-                else:
-                    print(f"Failed to scrape post {i}")
+                #post = await scrape_post(i)
+                #if post:
+                #    add_post(post[0], post[1], post[2], post[3], post[4], post[5], conn)
+                #else:
+                #   print(f"Failed to scrape post {i}")
+
+                #start a thread to scrape the post
+                thread = threading.Thread(target=scrape_post, args=(i,)).start()
+
                 bar()
 
+            # go through the queue and add the posts to the database
+            with alive_bar(processing_queue.qsize()) as bar:
+                time.sleep(5)
+                while not processing_queue.empty():
+                    post = processing_queue.get_nowait()
+                    add_post(post[0], post[1], post[2], post[3], post[4], post[5], conn)
+                    bar()
+
         conn.close()
-
-async def scrape_post(post_id):
-
-    url = f"https://xkcd.com/{post_id}/info.0.json"
-
-    # get data
-    response = requests.get(url)
-
-    # check if response is valid
-    if response.status_code != 200:
-        return False
-    
-    # get json
-    post = response.json()
-
-    id = post['num']
-    title = post['title']
-    alt = post['alt']
-    url = post['link']
-    img = post['img']
-
-    return [id, title, alt, url, img]
-
 
 
 # GETTERS
@@ -254,6 +312,7 @@ def apiInit():
     asyncio.run(main())
 
 
-
+if __name__ == "__main__":
+    asyncio.run(main())
 
 

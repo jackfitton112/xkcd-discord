@@ -32,6 +32,7 @@ async def help(channel: discord.TextChannel) -> None:
     - `!xkcd search <search term>` - Search for a post (may return multiple posts)
     - `!xkcd <comic number>` - Get the requested comic
     - `!xkcd random` - Get a random comic
+    - `!xkcd explain <comic number>` - Get the explanation for the requested comic
     '''
 
     await channel.send(message)
@@ -90,6 +91,20 @@ async def send_post(channel: discord.TextChannel, post: tuple) -> None:
 
     await channel.send(embed=embed)
 
+async def send_explination(channel: discord.TextChannel, post: tuple) -> None:
+
+    try:
+        explination = post[6]
+    except:
+        explination = "No explination found"
+
+    #loop through the explination and send it in chunks of 1999 characters
+    for i in range(0, len(explination), 1999):
+        await channel.send(explination[i:i+1999])
+
+    
+
+
 
 
 @client.event
@@ -126,6 +141,11 @@ async def on_message(message):
         elif command == "random":
             data = api.get_random_post()
             await send_post(message.channel, data)
+
+        elif command == "explain":
+            post_id = message.content.split()[2]
+            data = api.get_post_by_id(post_id)
+            await send_explination(message.channel, data)
 
         elif command == "search":
             # search term is anything after the command
