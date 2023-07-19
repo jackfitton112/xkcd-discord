@@ -4,3 +4,7 @@ aiohttp
 asyncio
 lxml
 python-dotenv
+mwparserfromhell
+alive-progress
+
+
