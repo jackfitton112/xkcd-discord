@@ -44,5 +44,12 @@ the base command is `!xkcd` and can be used in the following ways:
 - `!xkcd explain <comic number>` - Sends the explain xkcd page for the given comic number
 
 
+TODO: (Feek free to make a pull request to add any of these features)
 
+- [ ] change to slash commands
+- [ ] add notes about interactive comics 
+- [ ] make scraping more efficient
+- [ ] add more search options
+- [ ] add more explain xkcd options
+- [ ] add more error handling
 
