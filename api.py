@@ -216,7 +216,7 @@ async def scrape_xkcd():
     if latest_xkcd > latest_db:
         
         with alive_bar(latest_xkcd - latest_db + 1) as bar:
-            for i in range(latest_db + 1, latest_xkcd):
+            for i in range(latest_db + 1, latest_xkcd + 1):
 
                 # add scrape to queue
                 #post = await scrape_post(i)
@@ -303,7 +303,12 @@ async def main ():
 
     init_database()
 
-    await scrape_xkcd()
+    #set a async loop to run every hour
+    while True:
+        await scrape_xkcd()
+        await asyncio.sleep(3600)
+        # This is non-blocking, so other code can run while we wait for the timer to expire.
+        
 
     
 

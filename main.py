@@ -102,6 +102,40 @@ async def send_explination(channel: discord.TextChannel, post: tuple) -> None:
     for i in range(0, len(explination), 1999):
         await channel.send(explination[i:i+1999])
 
+async def debug(channel: discord.TextChannel) -> None:
+    
+    #send latest post
+    data = api.get_latest_post()
+    await channel.send("Latest post:")
+    await send_post(channel, data)
+
+    #send random post
+    data = api.get_random_post()
+    await channel.send("Random post:")
+    await send_post(channel, data)
+
+    #send post by id
+    data = api.get_post_by_id(1)
+    await channel.send("Post by id (1):")
+    await send_post(channel, data)
+
+    #explain post by id
+    data = api.get_post_by_id(1)
+    await channel.send("Explain post by id (1):")
+    await send_explination(channel, data)
+
+    #search posts
+    data = api.search_posts("twitter bot")
+    await channel.send("Search posts (python):")
+    for post in data:
+        await send_post(channel, post)
+
+    
+
+
+
+
+
     
 
 
@@ -146,6 +180,10 @@ async def on_message(message):
             post_id = message.content.split()[2]
             data = api.get_post_by_id(post_id)
             await send_explination(message.channel, data)
+
+        elif command == "debug":
+            await debug(message.channel)
+            return
 
         elif command == "search":
             # search term is anything after the command
