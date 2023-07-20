@@ -32,6 +32,15 @@ def init_database():
         explination text)
         ''')
     
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+        id integer PRIMARY KEY,
+        user_id integer,
+        username text,
+        last_post integer
+        )
+        ''')
+    
     # commit changes
     conn.commit()
 
@@ -245,6 +254,49 @@ async def scrape_xkcd():
 
 
     conn.close()
+
+def add_user(user_id: int, username: str) -> bool:
+
+    # connect to database
+    conn = sqlite3.connect('xkcd.db')
+    c = conn.cursor()
+
+    # insert data
+    try:
+        c.execute("INSERT INTO users VALUES (:id, :user_id, :username, :last_post)",
+                {
+                    'id': None,
+                    'user_id': user_id,
+                    'username': username,
+                    'last_post': 0
+
+                }
+            )
+
+        # commit changes
+        conn.commit()
+
+    except sqlite3.IntegrityError:
+        return False
+    
+    # close connection
+    conn.close()
+
+    return True
+
+def user_exists(user_id: int) -> bool:
+
+    conn = sqlite3.connect('xkcd.db')
+    c = conn.cursor()
+
+    c.execute("SELECT * FROM users WHERE user_id=:user_id", {'user_id': user_id})
+
+    user = c.fetchone()
+
+    conn.close()
+
+    return user is not None # returns true if user exists, false if not
+
 
 
 # GETTERS
