@@ -1,10 +1,11 @@
 # XKCD Discord
-![Python Version](https://img.shields.io/badge/python-3.8.10%2B-blue.svg)
-![License](https://img.shields.io/github/license/jackfitton112/xkcd-discord?color=orange)
-![Issues](https://img.shields.io/github/issues/jackfitton112/xkcd-discord)
-![Pull Requests](https://img.shields.io/github/issues-pr/jackfitton112/xkcd-discord)
-
 A Discord bot that sends XKCD comics to a channel.
+
+---
+[![forthebadge](https://forthebadge.com/images/badges/powered-by-electricity.svg)](https://forthebadge.com)
+[![forthebadge](https://forthebadge.com/images/badges/built-with-science.svg)](https://forthebadge.com)
+[![forthebadge](https://forthebadge.com/images/badges/works-on-my-machine.svg)](https://forthebadge.com)
+---
 
 Add the bot to your server [ADD TO DISCORD](https://discord.com/api/oauth2/authorize?client_id=1128423843460026409&permissions=3072&redirect_uri=https%3A%2F%2Ft2k.group&response_type=code&scope=bot%20messages.read).
 
@@ -48,8 +49,14 @@ TODO: (Feek free to make a pull request to add any of these features)
 
 - [ ] change to slash commands [Difficult as needs rework of code]
 - [ ] add notes about interactive comics  [https://www.explainxkcd.com/wiki/index.php/Category:Interactive_comics]
-- [ ] make scraping more efficient [async threading etc]
-- [ ] add more search options
-- [ ] add more explain xkcd options
+- [X] make scraping more efficient [async threading etc] [Done] Now takes >2mins to scrape all comics
+- [X] add more search options - search looks for comic title, transcript and alt text [Done]
+- [X] add more explain xkcd options - All comics have an explain xkcd page [Done] (>98%)
 - [ ] add more error handling
+- [ ] Write tests
+- [ ] DM user when new comic is released
+    - [X] add user support to database [Done]
+    - [ ] add functions to add/remove users
+    - [X] add function to check if user is in database [Done]
+    - [ ] add function to send DM to user
 
