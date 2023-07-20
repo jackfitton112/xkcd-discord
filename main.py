@@ -1,7 +1,5 @@
 import discord
-from bs4 import BeautifulSoup
-import aiohttp, asyncio
-from lxml import etree
+import asyncio
 from random import randint
 from dotenv import load_dotenv
 import os

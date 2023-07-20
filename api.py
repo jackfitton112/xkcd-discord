@@ -151,11 +151,11 @@ async def scrape_xkcd():
         # get data
         response = requests.get(url)
 
-        # check if response is valid
+        # check if response is valid, if not return false as the post doesn't exist
         if response.status_code != 200:
             return False
         
-        # get json
+        # get json from response object
         post = response.json()
 
         id = post['num']
@@ -206,39 +206,45 @@ async def scrape_xkcd():
         #return [id, title, alt, url, img, exp]
         processing_queue.put_nowait([id, title, alt, url, img, exp])
 
+        return True
+
   # connect to database
     conn = sqlite3.connect('xkcd.db')
 
     latest_xkcd = await get_page_count()
 
-    latest_db = latest_stored_post_id()
+    #latest_db = latest_stored_post_id() #This is more efficient however if the database is  missing x and latest is x+1 then it will not scrape x
+    with alive_bar(latest_xkcd+1) as bar:
+        for i in range(1, latest_xkcd+1):
 
-    if latest_xkcd > latest_db:
+            #check if post exists in database
+            if get_post_by_id(i) is None: #TODO: Monitor this to see if it is a bottleneck
+                    
+                    #start a thread to scrape the post
+                    thread = threading.Thread(target=scrape_post, args=(i,)).start()
+
+            bar()
+
         
-        with alive_bar(latest_xkcd - latest_db + 1) as bar:
-            for i in range(latest_db + 1, latest_xkcd + 1):
+    with alive_bar(processing_queue.qsize()) as bar:
+        while not processing_queue.empty():
+            post = processing_queue.get_nowait()
+            add_post(post[0], post[1], post[2], post[3], post[4], post[5], conn)
+            bar()
 
-                # add scrape to queue
-                #post = await scrape_post(i)
-                #if post:
-                #    add_post(post[0], post[1], post[2], post[3], post[4], post[5], conn)
-                #else:
-                #   print(f"Failed to scrape post {i}")
+    #make sure all theads have finished
+    time.sleep(5)
+    #kill all threads
+    for thread in threading.enumerate():
+        if thread.name != "MainThread":
+            print(f"Killing thread {thread.name}")
+            thread.join()
 
-                #start a thread to scrape the post
-                thread = threading.Thread(target=scrape_post, args=(i,)).start()
+    # commit changes
+    conn.commit()
 
-                bar()
 
-            # go through the queue and add the posts to the database
-            with alive_bar(processing_queue.qsize()) as bar:
-                time.sleep(5)
-                while not processing_queue.empty():
-                    post = processing_queue.get_nowait()
-                    add_post(post[0], post[1], post[2], post[3], post[4], post[5], conn)
-                    bar()
-
-        conn.close()
+    conn.close()
 
 
 # GETTERS
@@ -296,9 +302,6 @@ def get_latest_post() -> tuple:
 
 
 
-
-
-
 async def main ():
 
     init_database()
@@ -310,8 +313,6 @@ async def main ():
         # This is non-blocking, so other code can run while we wait for the timer to expire.
         
 
-    
-
 
 def apiInit():
     asyncio.run(main())
@@ -319,5 +320,6 @@ def apiInit():
 
 if __name__ == "__main__":
     asyncio.run(main())
+    exit() #Currently having issues with the loop not closing properly
 
 

@@ -46,9 +46,9 @@ the base command is `!xkcd` and can be used in the following ways:
 
 TODO: (Feek free to make a pull request to add any of these features)
 
-- [ ] change to slash commands
-- [ ] add notes about interactive comics 
-- [ ] make scraping more efficient
+- [ ] change to slash commands [Difficult as needs rework of code]
+- [ ] add notes about interactive comics  [https://www.explainxkcd.com/wiki/index.php/Category:Interactive_comics]
+- [ ] make scraping more efficient [async threading etc]
 - [ ] add more search options
 - [ ] add more explain xkcd options
 - [ ] add more error handling
